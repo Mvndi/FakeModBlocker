@@ -252,3 +252,45 @@ extra-detections:
       #   punishment:
       #     action: "KICK"
       #     reason: "&c&lXaero's Map detected."
+
+# =============================================================================
+# force-xaero-fairplay - push Xaero's Minimap / World Map into fair-play mode
+# 强制 Xaero 地图进入公平游戏模式
+# =============================================================================
+# Xaero's maps listen for "client rules" delivered as an invisible system chat
+# line. This plugin sends that line itself, so you do NOT need Xaero's Map Server
+# Utils datapack - which matters on Folia, where datapack functions are not a
+# practical option.
+#
+# IMPORTANT: this is cooperation, not enforcement. It works because the mod
+# chooses to obey the rule. A patched client can ignore it, which is exactly what
+# the detection half of this plugin is for. Use both together.
+#
+# mode:
+#   fairplay        - no cave mode (minimap AND world map), no entity radar
+#   fairplay-nether - as fairplay, but nether cave mode still works, so the
+#                     bedrock roof does not blank out the map. Sends the
+#                     keyword for BOTH mods: the minimap and the world map
+#                     each only understand their own.
+#   disable         - switch the minimap off completely
+#   off             - do nothing
+force-xaero-fairplay:
+  enabled: false
+  mode: fairplay
+
+  # true  = send only the invisible rule; players see a single blank chat line.
+  # false = also show messages file key 'xaero.notice', so players know why their
+  #         radar stopped working instead of assuming the mod broke.
+  silent: true
+
+  # Leave exempt players alone (the /modblocker exempt list and anyone holding
+  # fakemodblocker.bypass). Set to false to force fair-play on literally everyone.
+  respect-exempt: true
+
+  # Re-send when a player changes world. Cheap, and keeps the rule applied after
+  # a cross-world teleport.
+  resend-on-world-change: true
+
+  # Ticks to wait after join before sending. The client mod must be ready to read
+  # the message; 20 ticks (1 second) is a safe default.
+  delay-ticks: 20

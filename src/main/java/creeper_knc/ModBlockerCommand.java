@@ -99,8 +99,86 @@ public class ModBlockerCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        if (args.length >= 1 && args[0].equalsIgnoreCase("exempt")) {
+            handleExempt(sender, args);
+            return true;
+        }
+
         MessageBridge.send(sender, getMsg("command.usage"));
         return true;
+    }
+
+    private void handleExempt(CommandSender sender, String[] args) {
+        ExemptManager exempt = FakeModBlocker.getInstance().getExemptManager();
+        if (exempt == null) {
+            MessageBridge.send(sender, getMsg("command.exempt-unavailable",
+                    "&cThe exemption list is not initialized."));
+            return;
+        }
+
+        if (args.length >= 2 && args[1].equalsIgnoreCase("list")) {
+            List<String> names = exempt.names();
+            if (names.isEmpty()) {
+                MessageBridge.send(sender, getMsg("command.exempt-list-empty",
+                        "&7Nobody is exempt right now."));
+                return;
+            }
+
+            MessageBridge.send(sender, getMsg("command.exempt-list-header",
+                    "&bExempt from all checks (&f%count%&b):")
+                    .replace("%count%", String.valueOf(names.size())));
+
+            for (String name : names) {
+                String entry = getMsg("command.exempt-list-entry", "&7- &f%player%")
+                        .replace("%player%", name);
+                if (exempt.isPending(name)) {
+                    entry = entry + getMsg("command.exempt-list-pending", " &8(awaiting first login)");
+                }
+                MessageBridge.send(sender, entry);
+            }
+            return;
+        }
+
+        if (args.length != 3) {
+            MessageBridge.send(sender, getMsg("command.exempt-usage",
+                    "&eUsage: /modblocker exempt <add | remove | list> [player]"));
+            return;
+        }
+
+        String target = args[2];
+
+        if (args[1].equalsIgnoreCase("add")) {
+            ExemptManager.AddResult result = exempt.add(target);
+
+            if (!result.wasAdded()) {
+                MessageBridge.send(sender, getMsg("command.exempt-already",
+                        "&7%player% is already exempt.").replace("%player%", result.getDisplayName()));
+                return;
+            }
+
+            String template = result.isPending()
+                    ? getMsg("command.exempt-added-pending",
+                            "&a%player% is now exempt. They have never joined this server, so the entry"
+                                    + " locks onto their UUID the first time they log in.")
+                    : getMsg("command.exempt-added",
+                            "&a%player% is now exempt from every check.");
+            MessageBridge.send(sender, template.replace("%player%", result.getDisplayName()));
+            return;
+        }
+
+        if (args[1].equalsIgnoreCase("remove")) {
+            if (exempt.remove(target)) {
+                MessageBridge.send(sender, getMsg("command.exempt-removed",
+                        "&a%player% is no longer exempt.").replace("%player%", target));
+            } else {
+                MessageBridge.send(sender, getMsg("command.exempt-not-found",
+                        "&7%player% was not on the exemption list.").replace("%player%", target));
+            }
+            return;
+        }
+
+        MessageBridge.send(sender, getMsg("command.exempt-usage",
+                "&eUsage: /modblocker exempt <add | remove | list> [player]"));
     }
 
     private void showViolations(CommandSender sender, String name) {
@@ -185,7 +263,25 @@ public class ModBlockerCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 1) {
-            return filter(Arrays.asList("reload", "check", "violations", "clear"), args[0]);
+            return filter(Arrays.asList("reload", "check", "violations", "clear", "exempt"), args[0]);
+        }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("exempt")) {
+            return filter(Arrays.asList("add", "remove", "list"), args[1]);
+        }
+
+        if (args.length == 3 && args[0].equalsIgnoreCase("exempt")) {
+            ExemptManager exempt = FakeModBlocker.getInstance().getExemptManager();
+            if (exempt == null) {
+                return Collections.emptyList();
+            }
+            if (args[1].equalsIgnoreCase("remove")) {
+                return filter(exempt.names(), args[2]);
+            }
+            if (args[1].equalsIgnoreCase("add")) {
+                return filter(onlineNames(), args[2]);
+            }
+            return Collections.emptyList();
         }
 
         if (args.length == 2) {
@@ -261,6 +357,8 @@ public class ModBlockerCommand implements CommandExecutor, TabCompleter {
                     "the detection listener failed to register - see console");
             case START_FAILED -> getMsg("command.sign-check-reason-failed",
                     "the check could not be started - see console");
+            case EXEMPT -> getMsg("command.sign-check-reason-exempt",
+                    "this player is exempt from all checks");
             default -> getMsg("command.sign-check-reason-unavailable", "unknown");
         };
     }

@@ -172,11 +172,30 @@ public class ModBlocker implements Listener, PluginMessageListener {
         return uuid != null && uuid.toString().toLowerCase(Locale.ROOT).startsWith("00000000-0000-0000-");
     }
 
+    public boolean isExempt(Player player) {
+        if (player == null) {
+            return false;
+        }
+        ExemptManager exempt = FakeModBlocker.getInstance().getExemptManager();
+        if (exempt != null && exempt.isExempt(player)) {
+            return true;
+        }
+        return player.hasPermission("fakemodblocker.bypass");
+    }
+
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        if (player.hasPermission("fakemodblocker.bypass")) {
+        ExemptManager exempt = FakeModBlocker.getInstance().getExemptManager();
+        if (exempt != null) {
+            exempt.onPlayerJoin(player);
+        }
+
+        if (isExempt(player)) {
+            if (config.getBoolean("logger")) {
+                logToConsole("Skipping every check for exempt player " + player.getName() + ".");
+            }
             return;
         }
 
@@ -200,6 +219,13 @@ public class ModBlocker implements Listener, PluginMessageListener {
      * Every branch leaves a trace in console, so a skip is never silent.
      */
     public SignDetectionState startSignDetection(Player player) {
+        if (isExempt(player)) {
+            if (config.getBoolean("logger")) {
+                logToConsole("Sign translation detection skipped for " + player.getName() + ": exempt.");
+            }
+            return SignDetectionState.EXEMPT;
+        }
+
         if (!config.getBoolean("extra-detections.sign-translation.enabled", false)) {
             if (config.getBoolean("logger")) {
                 logToConsole("Sign translation detection skipped for " + player.getName() + ": disabled in config.");
@@ -251,6 +277,10 @@ public class ModBlocker implements Listener, PluginMessageListener {
     }
 
     private void checkForMods(Player player) {
+        if (isExempt(player)) {
+            return;
+        }
+
         boolean flagged = false;
         List<String> detected = new ArrayList<>();
         List<String> forbidden = config.getStringList("forbiddenList");
@@ -279,6 +309,10 @@ public class ModBlocker implements Listener, PluginMessageListener {
     }
 
     private void handleDetectedMods(Player player, List<String> mods) {
+        if (isExempt(player)) {
+            return;
+        }
+
         boolean escalating = violationManager != null && violationManager.isEnabled();
 
         // The fixed punishment fires once per session; escalation does its own per-mod
@@ -320,6 +354,10 @@ public class ModBlocker implements Listener, PluginMessageListener {
     }
 
     void handleSignDetection(Player player, DetectionModConfig detectConfig) {
+        if (isExempt(player)) {
+            return;
+        }
+
         String reason = detectConfig.getReason() != null
                 ? detectConfig.getReason()
                 : "&cDetected forbidden mod: " + detectConfig.getName();
@@ -603,7 +641,7 @@ public class ModBlocker implements Listener, PluginMessageListener {
         if (!config.getBoolean("enable")) {
             return;
         }
-        if (player.hasPermission("fakemodblocker.bypass")) {
+        if (isExempt(player)) {
             return;
         }
 
@@ -741,11 +779,32 @@ public class ModBlocker implements Listener, PluginMessageListener {
         MessageBridge.kick(player, reason);
     }
 
+    static String sanitizeCommandArgument(String raw) {
+        if (raw == null) {
+            return "";
+        }
+
+        StringBuilder out = new StringBuilder(raw.length());
+        for (int i = 0; i < raw.length(); i++) {
+            char c = raw.charAt(i);
+            if (c == '"' || c == 39) {
+                continue;
+            }
+            out.append(Character.isWhitespace(c) || Character.isISOControl(c) ? '_' : c);
+        }
+
+        int start = 0;
+        while (start < out.length() && (out.charAt(start) == '/' || out.charAt(start) == '@')) {
+            start++;
+        }
+        return out.substring(start);
+    }
+
     /** Single kick path for every detection: honours useCustomKickCommand. */
     void kickWithReason(Player player, String reason) {
         if (config.getBoolean("useCustomKickCommand")) {
             String cmd = config.getString("command", "")
-                    .replace("%player%", player.getName())
+                    .replace("%player%", sanitizeCommandArgument(player.getName()))
                     .replace("%kickMessage%", MessageBridge.toLegacySection(reason));
 
             FakeModBlocker.getInstance().getScheduler().runGlobal(() ->
@@ -974,7 +1033,8 @@ public class ModBlocker implements Listener, PluginMessageListener {
         /** Feature is on and supported, but the listener is not registered. */
         BRIDGE_UNAVAILABLE,
         /** The bridge exists but threw while starting the check. */
-        START_FAILED
+        START_FAILED,
+        EXEMPT
     }
 
     public static class DetectionModConfig {

@@ -51,7 +51,7 @@ sign:
 command:
   no-permission: "&c你没有权限使用该命令。"
   reload-success: "&aModBlocker 的配置与语言文件已重载。"
-  usage: "&e用法：/modblocker <reload | check <玩家> | violations <玩家> | clear <玩家> [模组]>"
+  usage: "&e用法：/modblocker <reload | check <玩家> | violations <玩家> | clear <玩家> [模组] | exempt <add|remove|list> [玩家]>"
   player-not-found: "&c玩家 %player% 不在线或不存在。"
   check-header: "&b正在检查 &f%player% &b的模组插件频道："
   check-channels: "&7已注册的频道："
@@ -76,3 +76,18 @@ command:
   clear-success: "&a已清除 &f%player% &a的 &f%count% &a条违规记录。"
   clear-none: "&7没有找到 &f%player% &7的违规记录。"
   escalation-unavailable: "&c阶梯处罚系统尚未初始化。"
+  exempt-usage: "&e用法：/modblocker exempt <add | remove | list> [玩家]"
+  exempt-unavailable: "&c豁免名单尚未初始化。"
+  exempt-added: "&a%player% 现已豁免所有检测。"
+  exempt-added-pending: "&a%player% 已加入豁免名单。该玩家从未进入过本服，条目将在其首次登录时绑定到 UUID。"
+  exempt-already: "&7%player% 已经在豁免名单中。"
+  exempt-removed: "&a%player% 已从豁免名单中移除。"
+  exempt-not-found: "&7%player% 不在豁免名单中。"
+  exempt-list-header: "&b豁免所有检测的玩家（&f%count%&b）："
+  exempt-list-entry: "&7- &f%player%"
+  exempt-list-pending: " &8（等待首次登录）"
+  sign-check-reason-exempt: "该玩家已豁免所有检测"
+
+# 当 force-xaero-fairplay 的 silent 为 false 时向玩家显示。
+xaero:
+  notice: "&7[地图] &f本服强制公平游戏地图：洞穴模式与实体雷达已被关闭。"

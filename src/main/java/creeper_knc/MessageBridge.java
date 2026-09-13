@@ -147,6 +147,37 @@ public final class MessageBridge {
         }
     }
 
+    public static void sendLiteral(Player player, String literal) {
+        if (player == null || literal == null || literal.isEmpty()) {
+            return;
+        }
+
+        if (adventurePresent && senderComponentSendPresent && componentClass != null) {
+            try {
+                Method textFactory = componentClass.getMethod("text", String.class);
+                Object component = textFactory.invoke(null, literal);
+                Method sendMethod = CommandSender.class.getMethod("sendMessage", componentClass);
+                sendMethod.invoke(player, component);
+                return;
+            } catch (Throwable ignored) {
+            }
+        }
+
+        try {
+            Class<?> textComponentClass = Class.forName("net.md_5.bungee.api.chat.TextComponent");
+            Class<?> baseComponentClass = Class.forName("net.md_5.bungee.api.chat.BaseComponent");
+            Object component = textComponentClass.getConstructor(String.class).newInstance(literal);
+            Object spigot = player.getClass().getMethod("spigot").invoke(player);
+            Method sendMethod = spigot.getClass().getMethod("sendMessage", baseComponentClass);
+            sendMethod.setAccessible(true);
+            sendMethod.invoke(spigot, component);
+            return;
+        } catch (Throwable ignored) {
+        }
+
+        player.sendMessage(literal);
+    }
+
     public static String toLegacySection(String input) {
         if (input == null || input.isEmpty()) {
             return "";

@@ -51,7 +51,7 @@ sign:
 command:
   no-permission: "&cYou do not have permission to use this command."
   reload-success: "&aModBlocker configuration and messages reloaded successfully."
-  usage: "&eUsage: /modblocker <reload | check <player> | violations <player> | clear <player> [mod]>"
+  usage: "&eUsage: /modblocker <reload | check <player> | violations <player> | clear <player> [mod] | exempt <add|remove|list> [player]>"
   player-not-found: "&cPlayer %player% is not online or does not exist."
   check-header: "&bChecking MOD plugin channels for &f%player%&b:"
   check-channels: "&7Registered channels:"
@@ -76,3 +76,18 @@ command:
   clear-success: "&aCleared &f%count%&a violation record(s) for &f%player%&a."
   clear-none: "&7No violation records found for &f%player%&7."
   escalation-unavailable: "&cThe escalation system is not initialized."
+  exempt-usage: "&eUsage: /modblocker exempt <add | remove | list> [player]"
+  exempt-unavailable: "&cThe exemption list is not initialized."
+  exempt-added: "&a%player% is now exempt from every check."
+  exempt-added-pending: "&a%player% is now exempt. They have never joined this server, so the entry locks onto their UUID the first time they log in."
+  exempt-already: "&7%player% is already exempt."
+  exempt-removed: "&a%player% is no longer exempt."
+  exempt-not-found: "&7%player% was not on the exemption list."
+  exempt-list-header: "&bExempt from all checks (&f%count%&b):"
+  exempt-list-entry: "&7- &f%player%"
+  exempt-list-pending: " &8(awaiting first login)"
+  sign-check-reason-exempt: "this player is exempt from all checks"
+
+# Shown to players when force-xaero-fairplay runs with silent: false.
+xaero:
+  notice: "&7[Map] &fThis server enforces fair-play mapping: cave mode and entity radar are disabled."

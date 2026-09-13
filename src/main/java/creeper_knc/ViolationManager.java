@@ -800,7 +800,7 @@ public final class ViolationManager {
                 return "";
             }
             String flattened = MessageBridge.toLegacySection(punishmentText).replace("\n", " ");
-            return raw.replace("%player%", player)
+            return raw.replace("%player%", ModBlocker.sanitizeCommandArgument(player))
                     .replace("%mods%", mod)
                     .replace("%mod%", mod)
                     .replace("%count%", String.valueOf(count))

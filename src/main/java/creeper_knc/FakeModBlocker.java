@@ -20,6 +20,8 @@ public class FakeModBlocker extends JavaPlugin {
     private FileConfiguration messages;
     private SchedulerAdapter scheduler;
     private ModBlocker modBlocker;
+    private ExemptManager exemptManager;
+    private XaeroFairPlay xaeroFairPlay;
 
     public static FakeModBlocker getInstance() {
         return instance;
@@ -40,7 +42,10 @@ public class FakeModBlocker extends JavaPlugin {
         getConfig().setDefaults(new YamlConfiguration());
         loadMessages();
 
+        exemptManager = new ExemptManager(this);
+
         modBlocker = new ModBlocker();
+        xaeroFairPlay = new XaeroFairPlay(this);
 
         ModBlockerCommand command = new ModBlockerCommand();
         Objects.requireNonNull(getCommand("modblocker"), "Command 'modblocker' not defined in plugin.yml")
@@ -49,6 +54,7 @@ public class FakeModBlocker extends JavaPlugin {
                 .setTabCompleter(command);
 
         getServer().getPluginManager().registerEvents(modBlocker, this);
+        getServer().getPluginManager().registerEvents(xaeroFairPlay, this);
 
         getServer().getMessenger().registerIncomingPluginChannel(this, "fml:hs", modBlocker);
         getServer().getMessenger().registerIncomingPluginChannel(this, "fml:hsl", modBlocker);
@@ -68,8 +74,14 @@ public class FakeModBlocker extends JavaPlugin {
         reloadConfig();
         getConfig().setDefaults(new YamlConfiguration());
         loadMessages();
+        if (exemptManager != null) {
+            exemptManager.load();
+        }
         if (modBlocker != null) {
             modBlocker.reloadModBlockerConfig();
+        }
+        if (xaeroFairPlay != null) {
+            xaeroFairPlay.reload();
         }
     }
 
@@ -157,5 +169,13 @@ public class FakeModBlocker extends JavaPlugin {
 
     public ModBlocker getModBlocker() {
         return modBlocker;
+    }
+
+    public ExemptManager getExemptManager() {
+        return exemptManager;
+    }
+
+    public XaeroFairPlay getXaeroFairPlay() {
+        return xaeroFairPlay;
     }
 }

@@ -11,7 +11,7 @@ folia-supported: true
 commands:
   modblocker:
     description: ModBlocker admin commands
-    usage: /modblocker <reload|check <player>|violations <player>|clear <player> [mod]>
+    usage: /modblocker <reload|check <player>|violations <player>|clear <player> [mod]|exempt <add|remove|list> [player]>
     permission: fakemodblocker.admin
 permissions:
   fakemodblocker.admin:
