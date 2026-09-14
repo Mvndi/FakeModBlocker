@@ -603,10 +603,19 @@ public class VirtualSignDetectionBridge implements Listener {
     }
 
     private void restoreClientBlock(Player player, Location loc) {
-        if (!player.isOnline()) {
+        if (loc == null || loc.getWorld() == null || !player.isOnline()) {
             return;
         }
-        player.sendBlockChange(loc, loc.getBlock().getBlockData());
+
+        plugin.getScheduler().runMain(loc, () -> {
+            if (!player.isOnline() || loc.getWorld() == null) {
+                return;
+            }
+            if (!loc.getWorld().isChunkLoaded(loc.getBlockX() >> 4, loc.getBlockZ() >> 4)) {
+                return;
+            }
+            player.sendBlockChange(loc, loc.getBlock().getBlockData());
+        });
     }
 
     private void cleanup(UUID uuid) {
