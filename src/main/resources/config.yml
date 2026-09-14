@@ -294,3 +294,67 @@ force-xaero-fairplay:
   # Ticks to wait after join before sending. The client mod must be ready to read
   # the message; 20 ticks (1 second) is a safe default.
   delay-ticks: 20
+
+# =============================================================================
+# force-minimap-fairplay - JourneyMap and VoxelMap restrictions
+# 强制 JourneyMap / VoxelMap 进入公平游戏模式
+# =============================================================================
+# Unlike the Xaero switch above, these are ENFORCED rather than requested: both
+# mods ask the server what the player is allowed to see and obey the answer.
+# The plugin answers on their own plugin-message channels, so no extra mod,
+# datapack or companion plugin is needed.
+#
+# Verified against JourneyMap 6.0.8 (journeymap:perm_req) and
+# VoxelMap-Updated 26.2-1.16.10 (voxelmap:settings).
+#
+# NOTE: a player who has neither mod installed simply never receives anything.
+force-minimap-fairplay:
+  enabled: false
+
+  # Skip players on the /modblocker exempt list and anyone with
+  # fakemodblocker.bypass. Set false to restrict literally everyone.
+  respect-exempt: true
+
+  # Ticks to wait after join before sending. The client has to be ready to
+  # receive the packet; 40 ticks (2 seconds) is a safe default.
+  delay-ticks: 40
+
+  journeymap:
+    enabled: true
+
+    # The three that matter for fair play. false = players cannot see them.
+    players: false        # player radar
+    mobs: false           # hostile mob radar
+    animals: false        # animal radar
+    villagers: false      # villager radar
+    caves: false          # cave mapping (minimap AND fullscreen map)
+
+    # Map modes that stay allowed - turning these off is not "fair play",
+    # it just removes the map.
+    surface: true
+    topo: true
+    biome: true
+
+    player-names: false
+    underground-players: false
+    hide-ops: false
+    hide-spectators: true
+
+    waypoints: true
+    death-points: true
+    beacons: true
+    teleport: false
+
+    radar-lateral-distance: 512
+    radar-vertical-distance: 320
+
+    # Version string reported to the client so it accepts the config as current.
+    # Only change this if a JourneyMap update starts ignoring the settings.
+    config-version: "6.1.0-beta99"
+
+  voxelmap:
+    enabled: true
+    radar: false          # master radar switch
+    radar-players: false
+    radar-mobs: false
+    caves: false          # cave mode

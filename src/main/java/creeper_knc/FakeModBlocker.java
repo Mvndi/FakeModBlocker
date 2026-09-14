@@ -22,6 +22,7 @@ public class FakeModBlocker extends JavaPlugin {
     private ModBlocker modBlocker;
     private ExemptManager exemptManager;
     private XaeroFairPlay xaeroFairPlay;
+    private MinimapFairPlay minimapFairPlay;
 
     public static FakeModBlocker getInstance() {
         return instance;
@@ -46,6 +47,7 @@ public class FakeModBlocker extends JavaPlugin {
 
         modBlocker = new ModBlocker();
         xaeroFairPlay = new XaeroFairPlay(this);
+        minimapFairPlay = new MinimapFairPlay(this);
 
         ModBlockerCommand command = new ModBlockerCommand();
         Objects.requireNonNull(getCommand("modblocker"), "Command 'modblocker' not defined in plugin.yml")
@@ -55,6 +57,12 @@ public class FakeModBlocker extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(modBlocker, this);
         getServer().getPluginManager().registerEvents(xaeroFairPlay, this);
+        getServer().getPluginManager().registerEvents(minimapFairPlay, this);
+
+        for (String channel : MinimapFairPlay.CHANNELS) {
+            getServer().getMessenger().registerOutgoingPluginChannel(this, channel);
+            getServer().getMessenger().registerIncomingPluginChannel(this, channel, minimapFairPlay);
+        }
 
         getServer().getMessenger().registerIncomingPluginChannel(this, "fml:hs", modBlocker);
         getServer().getMessenger().registerIncomingPluginChannel(this, "fml:hsl", modBlocker);
@@ -82,6 +90,9 @@ public class FakeModBlocker extends JavaPlugin {
         }
         if (xaeroFairPlay != null) {
             xaeroFairPlay.reload();
+        }
+        if (minimapFairPlay != null) {
+            minimapFairPlay.reload();
         }
     }
 
@@ -177,5 +188,9 @@ public class FakeModBlocker extends JavaPlugin {
 
     public XaeroFairPlay getXaeroFairPlay() {
         return xaeroFairPlay;
+    }
+
+    public MinimapFairPlay getMinimapFairPlay() {
+        return minimapFairPlay;
     }
 }
